@@ -1,23 +1,9 @@
 from sympy import sympify
 
-# check if pointer is over button
-def check_cursor(master, buttons_list):
-    x, y = master.winfo_pointerx(), master.winfo_pointery()  # Pointer position
-    widget = master.winfo_containing(x, y)  # Posisiton widget under pointer
-    # Change bg button
-    for button in buttons_list:
-        if button == widget:
-            button.config(bg="#666569")
-        else:
-            button.config(bg="#77767a")
-
-    master.after(50, check_cursor)
-
 #Send txt to buttons_function
 def on_click(buttons_list, buttons_function):
     for index, button in enumerate(buttons_list):
         button.bind('<Button-1>', lambda event, i=index: buttons_function(i))
-
 
 def delete_zeros(number):
     if str(number) == "0":
@@ -40,7 +26,6 @@ def delete_zeros(number):
 
     return number
 
-
 def round_number(number):
     if str(number) == "0":
         return number
@@ -59,4 +44,3 @@ def round_number(number):
         else:
             number_to_round = 15 - index_dot
             return str(round(number, number_to_round))
-

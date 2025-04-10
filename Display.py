@@ -7,9 +7,12 @@ from Tools import on_click, delete_zeros, round_number
 
 class Display:
 
-    def __init__(self, master, buttons_list, text_buttons, memory_buttons_frame):
+    def __init__(self, master, buttons_list, text_buttons, memory_buttons_frame, buttons_frame, main_window):
         #create memory_buttons
-        self.memory_buttons = MemoryButtons(memory_buttons_frame, self.update_operation_from_memory)
+        self.memory_buttons = MemoryButtons(memory_buttons_frame,
+                                            self.update_operation_from_memory,
+                                            buttons_frame, main_window)
+        #master.bind("<Configure>", self.memory_buttons.on_resize(master.winfo_width()))
 
         self.update_operation_show = self.memory_buttons.update_operation_show #for class MemoryButtons
 
@@ -32,11 +35,29 @@ class Display:
 
         on_click(self.buttons_list, self.buttons_function)
 
-        self.show_old = tk.Label(self.master, text=self.operation_old, justify=tk.RIGHT, fg="black", font=("Segoe UI Variable", 15, "bold"), anchor="e", padx=5)
+        self.show_old = tk.Label(self.master,
+                                 text=self.operation_old,
+                                 justify=tk.RIGHT,
+                                 bg="#282828",
+                                 fg="#939393",
+                                 font=("Segoe UI Variable", 12),
+                                 pady=5,
+                                 anchor="e"
+                                 )
         self.show_old.grid(row=0, column=0, sticky="nse")
 
-        self.show_now = tk.Label(self.master, text=self.operation_now, justify=tk.RIGHT, fg="black", font=("Segoe UI Variable", self.fg_show_now, "bold"), padx=5, anchor="e")
+        self.show_now = tk.Label(self.master,
+                                 text=self.operation_now,
+                                 justify=tk.RIGHT,
+                                 bg="#282828",
+                                 fg="white",
+                                 font=("Segoe UI Variable",
+                                       self.fg_show_now,
+                                       "bold"),
+                                 anchor="e"
+                                 )
         self.show_now.grid(row=1, column=0, sticky="nes")
+
         self.master.grid_rowconfigure(0, weight=10)
         self.master.grid_rowconfigure(1, weight=60)
         self.master.grid_columnconfigure(0, weight=1)
@@ -323,11 +344,12 @@ class Display:
         self.second_number = False
 
     #Click "MR" and get memory[-1] value
-    def update_operation_from_memory(self, new_value):
+    def update_operation_from_memory(self, new_value, display = True):
         self.operation_now = new_value
-        self.display()
+        if display:
+            self.display()
 
-    def display(self, size=39):
+    def display(self):
         if self.get_memory_value:
             self.show_now.config(text=self.operation_now)
         else:
@@ -362,16 +384,29 @@ class Display:
             self.change_size_font(self.fg_show_now)
 
     def disable_button(self):
-        # "%","¹⁄ₓ","x²","√","÷","×", "-","+",".","±"
+        #"%","¹⁄ₓ","x²","√","÷","×", "-","+",".","±"
         buttons_disable = [0, 4, 5, 6, 7, 11, 15, 19, 20, 22]
         for i in range(10):
-            self.buttons_list[buttons_disable[i]].config(state="disabled")
+            self.buttons_list[buttons_disable[i]].configure(state="disabled")
+        #for memory buttons
+        for i in range(6):
+            self.memory_buttons.buttons_list[i].configure(state="disabled")
+        self.memory_buttons.disable_all  = True
 
     def enable_button(self):
-        # "%","¹⁄ₓ","x²","√","÷","×", "-","+",".","±"
+        #"%","¹⁄ₓ","x²","√","÷","×", "-","+",".","±"
         buttons_enable = [0, 4, 5, 6, 7, 11, 15, 19, 20, 22]
         for i in range(10):
-            self.buttons_list[buttons_enable[i]].config(state="normal")
+            self.buttons_list[buttons_enable[i]].configure(state="normal")
+        #for memory buttons
+        for i in range(6):
+            self.memory_buttons.buttons_list[i].configure(state="normal")
+        self.memory_buttons.disable_all = False
+
+        #check if all memory_buttons should work
+        if not self.memory_buttons.memory_value:
+            self.memory_buttons.disable_button()
+            self.memory_buttons.disable_buttons_value = True
 
     def find_sign_operation(self):
         #find second number after operation in operation_old
@@ -381,9 +416,9 @@ class Display:
         if operation_old[0] == "-":
             self.operation_old = self.operation_old[1:]
         elif "e" in operation_old:
-            ineks_e = operation_old.find("e")
-            operation_old = (operation_old[:ineks_e]
-                             + operation_old[ineks_e + 2:])  # Delete "e" oraz "+" or "-" after "e"
+            index_e = operation_old.find("e")
+            operation_old = (operation_old[:index_e]
+                             + operation_old[index_e + 2:])  # Delete "e" oraz "+" or "-" after "e"
 
         indeks_operation = min(
             (self.operation_old.replace(" ", "").find(op) for op in "+-÷×" if op in self.operation_old), default=-1)
@@ -404,9 +439,9 @@ class Display:
         if operation_old[0] == "-":
             operation_old = operation_old[1:]
         elif "e" in operation_old:
-            ineks_e = operation_old.find("e")
-            operation_old = operation_old[:ineks_e] + operation_old[
-                                                      ineks_e + 2:]  # Delete "e" oraz "+" or "-" after "e"
+            index_e = operation_old.find("e")
+            operation_old = operation_old[:index_e] + operation_old[
+                                                      index_e + 2:]  # Delete "e" oraz "+" or "-" after "e"
 
         operation_old = operation_old.replace(" ", "")
 
