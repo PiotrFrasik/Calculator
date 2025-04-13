@@ -1,8 +1,5 @@
 import customtkinter as ctk
 
-import MemoryButtons
-
-
 class AnimatedDownPanel(ctk.CTkFrame):
     def __init__(self, parent, start_pos, end_pos, disable_button, enable_button):
         super().__init__(master = parent)

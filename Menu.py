@@ -1,11 +1,21 @@
-import tkinter as tk
+import customtkinter as ctk
+from PIL import Image
 
 class Menu:
     def __init__(self, master):
         self.master = master
-        self.menu_bar = tk.Menu(master)
-        master.config(menu=self.menu_bar)
+        self.history_operation()
 
-        main_menu = tk.Menu(self.menu_bar, tearoff=0)
-        self.menu_bar.add_cascade(label="Motives", menu=main_menu)
-        self.menu_bar.add_cascade(label="About", menu=main_menu)
+    def history_operation(self):
+        #image_history = ctk.CTkImage("png\\history.png")
+
+        image_history = ctk.CTkImage(light_image=Image.open('png/history.png'))
+
+        btn_history = ctk.CTkButton(self.master, image=image_history, text="",
+                             #command=exit_frame,
+                             corner_radius=5, fg_color="#282828",
+                             hover_color="#4d4d4d", width=30)
+
+        btn_history.pack(side="right", padx=3, pady=3)
+
+

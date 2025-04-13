@@ -2,15 +2,14 @@ import tkinter as tk
 import customtkinter as ctk
 from sympy import sympify
 import uuid #generate unique ID for each frame
+from PIL import Image
 
 from AnimatedDownPanel import AnimatedDownPanel
 from Tools import on_click, delete_zeros, round_number
 
-
 def hover_label(color, widget1, widget2):
     widget1.configure(fg_color=color)
     widget2.configure(fg_color=color)
-
 
 class MemoryButtons:
     def __init__(self, master, update_operation_from_memory, buttons_frame, main_window):
@@ -60,10 +59,13 @@ class MemoryButtons:
         """Update operation_show in this class"""
         self.operation_show = new_value
 
-    def get_memory_value(self):
+    def get_memory_value(self, last=True, value_memory=None):
         """Update operation_now on display"""
         if self.memory_value:
-            self.update_operation_from_memory(list(self.memory_value.values())[-1])
+            if last:
+                self.update_operation_from_memory(list(self.memory_value.values())[-1])
+            else:
+                self.update_operation_from_memory(value_memory)
         return "0"
 
     def calculation(self, sign):
@@ -189,13 +191,21 @@ class MemoryButtons:
             animate()
             self.down_frame.destroy()
 
-        btn_exit = ctk.CTkButton(self.down_frame, text="Exit",
-                               command=exit_frame,
-                               corner_radius=5, fg_color="#282828", width=30)
+        #Buttons image
+        exit_image = ctk.CTkImage(light_image=Image.open('png/exit.png'))
+        delete_image = ctk.CTkImage(light_image=Image.open('png/delete.png'))
 
-        btn_delete_memory = ctk.CTkButton(self.down_frame, text="Delete All",
+        btn_exit = ctk.CTkButton(self.down_frame, text="",
+                               command=exit_frame,
+                               corner_radius=5, fg_color="#282828",
+                               hover_color="#4d4d4d",width=30,
+                               image=exit_image)
+
+        btn_delete_memory = ctk.CTkButton(self.down_frame, text="",
                                  command=delete_memory,
-                                 corner_radius=5, fg_color="#282828", width=30)
+                                 corner_radius=5, fg_color="#282828",
+                                 width=30, hover_color="#4d4d4d",
+                                 image = delete_image)
 
         btn_exit.pack(side="right", padx=3, pady=3)
         btn_delete_memory.pack(side="left", padx=3, pady=3)
@@ -227,6 +237,15 @@ class MemoryButtons:
                 self.disable_button()
                 self.disable_buttons_value = True
 
+        elif value_button == "MR":
+            self.get_memory_value(False, value_memory)
+            #hidding animation
+            self.animated_panel.animate_backwards()
+            self.down_frame.destroy()
+            self.enable_button(all_buttons=True)
+            #update operation_now from Display
+            self.update_operation_from_memory("0", False)
+
     def created_animated_numbers(self):
         for uuid_key, value in self.memory_value.items():
 
@@ -236,7 +255,6 @@ class MemoryButtons:
             main_frame = ctk.CTkFrame(self.scrollable_frame, fg_color="transparent")
             main_frame.pack(side="bottom", anchor="e", expand=True, fill="both")
             main_frame.key = uuid_key #it is the same key which number have in memory
-
 
             #There are numbers from memory
             label_frame = ctk.CTkLabel(main_frame, text=value, font=("Segoe UI Variable", 19, "bold"),
@@ -249,10 +267,17 @@ class MemoryButtons:
                             hover_label("#4d4d4d", mf, lf))
             main_frame.bind("<Leave>", lambda e, mf=main_frame, lf=label_frame:
                             hover_label("#282828", mf, lf))
+
+            main_frame.bind("<Button-1>", lambda e, key = uuid_key, mf=main_frame, lf=label_frame:
+                                      self.operation_for_animated("MR", key, lf, mf))
+
             label_frame.bind("<Enter>", lambda e, lf=label_frame, mf=main_frame:
                             hover_label("#4d4d4d", lf, mf))
             label_frame.bind("<Leave>", lambda e, lf=label_frame, mf=main_frame:
                             hover_label("#282828", lf, mf))
+
+            label_frame.bind("<Button-1>", lambda e, key=uuid_key, lf=label_frame, mf=main_frame:
+            self.operation_for_animated("MR", key, lf, mf))
 
             #Frame for buttons Exit and Delete All
             button_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -262,16 +287,19 @@ class MemoryButtons:
             btn_mc = ctk.CTkButton(button_frame, text="MC",
                                    command=lambda key=uuid_key, lb = label_frame, mf = main_frame:
                                    self.operation_for_animated("MC", key, lb, mf),
-                                   corner_radius=5, fg_color="#282828", width=30)
+                                   corner_radius=5, fg_color="#282828",
+                                   hover_color="#4d4d4d", width=30)
 
             btn_plus = ctk.CTkButton(button_frame, text="M+",
                                       command=lambda key = uuid_key, lb = label_frame, mf = main_frame:
                                       self.operation_for_animated("M+", key, lb, mf),
-                                      corner_radius=5, fg_color="#282828", width=30)
+                                      corner_radius=5, fg_color="#282828",
+                                      hover_color="#4d4d4d", width=30)
             btn_minus = ctk.CTkButton(button_frame, text="M-",
                                        command=lambda key=uuid_key, lb = label_frame, mf = main_frame:
                                        self.operation_for_animated("M-", key, lb, mf),
-                                       corner_radius=5, fg_color="#282828", width=30)
+                                       corner_radius=5, fg_color="#282828",
+                                       hover_color="#4d4d4d", width=30)
 
             btn_minus.pack(side="right", padx=2, pady=2)
             btn_plus.pack(side="right", padx=2, pady=2)
